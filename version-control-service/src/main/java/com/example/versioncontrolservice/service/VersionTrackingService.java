@@ -13,4 +13,6 @@ public interface VersionTrackingService {
 
 
     List<Article> compareArticle(String articleId, Integer versionId1, Integer versionId2);
+
+    VersionTrackingResponse createVersion(String articleId, Article article);
 }

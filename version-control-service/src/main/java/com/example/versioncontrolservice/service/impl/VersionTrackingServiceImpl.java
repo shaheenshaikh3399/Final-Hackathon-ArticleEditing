@@ -25,23 +25,37 @@ public class VersionTrackingServiceImpl implements VersionTrackingService {
     private final ArticleFeignClient articleFeignClient;
 
     @Override
+    public VersionTrackingResponse createVersion(String articleId, Article article) {
+        log.info("Inside createVersion");
+        Article article1 = articleFeignClient.createVersion(articleId, article).getBody();
+        if(Objects.nonNull(article1)) {
+            return VersionTrackingResponse.builder()
+                    .message("Version for the article Id %s: " + articleId + "created with versionId " + article.getCurrentVersionId() +
+                            "and the content is: " + article.getContent() + "title: " + article.getTitle())
+                    .status("Success")
+                    .build();
+        }
+        else{
+            throw new GlobalExceptionHandler(String.format("ArticleId %s: ", articleId , "is Invalid"));
+        }
+    }
+
+    @Override
     @CircuitBreaker(name="${spring.application.name}", fallbackMethod = "getDefaultArticle")
 
     public List<Article> trackVersionByArticleId(String arcticleId) {
-
+        log.info("Inside trackVersionByArticleId ");
         List<Article> articles = articleFeignClient.getArticleById(arcticleId).getBody();
-        if(Objects.nonNull(articles)) {
-            return articles;
-        }
-        else{
-            throw new GlobalExceptionHandler(String.format("Invalid ID provided!!"));
-        }
+        log.info(articles.toString());
+         return articles;
+
     }
 
     @Override
     @CircuitBreaker(name="${spring.application.name}", fallbackMethod = "getDefaultCompareVersion")
 
     public List<Article> compareArticle(String articleId, Integer versionId1, Integer versionId2) {
+        log.info("Inside compareArticle ");
 
         List<Article> response = articleFeignClient.compareArticles(articleId, versionId1, versionId2).getBody();
         if (Objects.nonNull(response)) {
@@ -51,6 +65,9 @@ public class VersionTrackingServiceImpl implements VersionTrackingService {
             throw new GlobalExceptionHandler(String.format("Invalid Id!!"));
         }
     }
+
+
+
     public List<Article> getDefaultArticle(String articleId, Exception exception) {
 
         Article article1 = Article.builder()

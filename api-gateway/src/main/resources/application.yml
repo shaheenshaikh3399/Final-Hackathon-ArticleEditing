@@ -19,4 +19,4 @@ spring:
         - id: VERSION-TRACKING-SERVICE
           uri: lb://VERSION-TRACKING-SERVICE
           predicates:
-            - Path=/api/**
+            - Path=/api/version**
